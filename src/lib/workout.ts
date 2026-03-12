@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { WeekPlan, DayWorkout, Exercise, WorkoutSet, SetLog, SetEntry } from '@/types/workout'
-import type { DbClientProgram, DbWorkoutSession, DbProgramExercise } from '@/types/db'
+import type { DbClientProgram, DbWorkoutSession, DbExercise } from '@/types/db'
 
 // ── Date helpers ─────────────────────────────────────────────
 
@@ -40,7 +40,7 @@ export function getWeekNumber(startDate: string, weekOffset: number): number | n
  * Picks the exercise_week prescription for a given weekNumber.
  * Falls back to the latest week_number <= weekNumber (allows re-use of week 1 indefinitely).
  */
-function resolveExerciseWeek(exercise: DbProgramExercise, weekNumber: number) {
+function resolveExerciseWeek(exercise: DbExercise, weekNumber: number) {
   const candidates = exercise.exercise_weeks.filter((w) => w.week_number <= weekNumber)
   if (candidates.length === 0) return exercise.exercise_weeks[0] ?? null
   return candidates.reduce((best, w) => (w.week_number > best.week_number ? w : best))
@@ -64,7 +64,7 @@ export function buildWeekData(
     .map((day) => {
       const session = sessionByDayId.get(day.id) ?? null
 
-      const exercises: Exercise[] = day.program_exercises
+      const exercises: Exercise[] = day.exercises
         .slice()
         .sort((a, b) => a.order_index - b.order_index)
         .reduce<Exercise[]>((acc, ex) => {
@@ -81,7 +81,7 @@ export function buildWeekData(
           // Pre-populate set log from DB
           if (session) {
             const logsForExercise = session.set_logs.filter(
-              (l) => l.program_exercise_id === ex.id
+              (l) => l.exercise_id === ex.id
             )
             for (const log of logsForExercise) {
               const key = setLogKey(weekOffset, day.day_index, ex.id, log.set_index)
@@ -126,10 +126,10 @@ export function buildWeekData(
 export function setLogKey(
   weekOffset: number,
   dayIndex: number,
-  programExerciseId: string,
+  exerciseId: string,
   setIndex: number
 ): string {
-  return `${weekOffset}-${dayIndex}-${programExerciseId}-${setIndex}`
+  return `${weekOffset}-${dayIndex}-${exerciseId}-${setIndex}`
 }
 
 // ── Supabase queries ──────────────────────────────────────────
@@ -150,7 +150,7 @@ async function fetchClientProgram(
          id, name,
          program_days (
            id, day_index, label, order_index,
-           program_exercises (
+           exercises (
              id, name, notes, order_index,
              exercise_weeks ( id, week_number, set_count, target_weight, target_reps )
            )
@@ -175,7 +175,7 @@ async function fetchSessions(
     .from('workout_sessions')
     .select(
       `id, program_day_id, week_number,
-       set_logs ( id, program_exercise_id, set_index, actual_weight, actual_reps, done )`
+       set_logs ( id, exercise_id, set_index, actual_weight, actual_reps, done )`
     )
     .eq('client_program_id', clientProgramId)
     .eq('week_number', weekNumber)
@@ -250,20 +250,20 @@ export async function upsertSession(
 export async function upsertSetLog(
   supabase: SupabaseClient,
   sessionId: string,
-  programExerciseId: string,
+  exerciseId: string,
   setIndex: number,
   entry: SetEntry
 ): Promise<void> {
   await supabase.from('set_logs').upsert(
     {
       workout_session_id: sessionId,
-      program_exercise_id: programExerciseId,
+      exercise_id: exerciseId,
       set_index: setIndex,
       actual_weight: entry.weight !== '' ? parseFloat(entry.weight) : null,
       actual_reps: entry.reps !== '' ? parseInt(entry.reps, 10) : null,
       done: entry.done,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: 'workout_session_id,program_exercise_id,set_index' }
+    { onConflict: 'workout_session_id,exercise_id,set_index' }
   )
 }

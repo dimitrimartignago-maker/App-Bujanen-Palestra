@@ -8,7 +8,7 @@ export interface DbExerciseWeek {
   target_reps: number
 }
 
-export interface DbProgramExercise {
+export interface DbExercise {
   id: string
   name: string
   notes: string | null
@@ -21,7 +21,7 @@ export interface DbProgramDay {
   day_index: number
   label: string | null
   order_index: number
-  program_exercises: DbProgramExercise[]
+  exercises: DbExercise[]
 }
 
 export interface DbClientProgram {
@@ -36,7 +36,7 @@ export interface DbClientProgram {
 
 export interface DbSetLog {
   id: string
-  program_exercise_id: string
+  exercise_id: string
   set_index: number
   actual_weight: number | null
   actual_reps: number | null

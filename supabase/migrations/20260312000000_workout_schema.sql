@@ -30,7 +30,7 @@ create table if not exists program_days (
 );
 
 -- Exercises within a day
-create table if not exists program_exercises (
+create table if not exists exercises (
   id              uuid primary key default gen_random_uuid(),
   program_day_id  uuid references program_days on delete cascade not null,
   name            text not null,
@@ -41,13 +41,13 @@ create table if not exists program_exercises (
 -- Per-week targets: weight/reps can progress each week.
 -- If a week has no row, fall back to the latest week_number <= current.
 create table if not exists exercise_weeks (
-  id                   uuid primary key default gen_random_uuid(),
-  program_exercise_id  uuid references program_exercises on delete cascade not null,
-  week_number          smallint not null check (week_number >= 1),
-  set_count            smallint not null default 3,
-  target_weight        numeric,        -- null = bodyweight
-  target_reps          smallint not null,
-  unique (program_exercise_id, week_number)
+  id           uuid primary key default gen_random_uuid(),
+  exercise_id  uuid references exercises on delete cascade not null,
+  week_number  smallint not null check (week_number >= 1),
+  set_count    smallint not null default 3,
+  target_weight numeric,        -- null = bodyweight
+  target_reps  smallint not null,
+  unique (exercise_id, week_number)
 );
 
 -- One session per (client_program × program_day × week_number)
@@ -63,28 +63,28 @@ create table if not exists workout_sessions (
 
 -- Individual set tracking within a session
 create table if not exists set_logs (
-  id                   uuid primary key default gen_random_uuid(),
-  workout_session_id   uuid references workout_sessions on delete cascade not null,
-  program_exercise_id  uuid references program_exercises not null,
-  set_index            smallint not null,
-  actual_weight        numeric,
-  actual_reps          smallint,
-  done                 boolean not null default false,
-  updated_at           timestamptz default now(),
-  unique (workout_session_id, program_exercise_id, set_index)
+  id                 uuid primary key default gen_random_uuid(),
+  workout_session_id uuid references workout_sessions on delete cascade not null,
+  exercise_id        uuid references exercises not null,
+  set_index          smallint not null,
+  actual_weight      numeric,
+  actual_reps        smallint,
+  done               boolean not null default false,
+  updated_at         timestamptz default now(),
+  unique (workout_session_id, exercise_id, set_index)
 );
 
 -- ============================================================
 -- Row Level Security
 -- ============================================================
 
-alter table programs          enable row level security;
-alter table client_programs   enable row level security;
-alter table program_days      enable row level security;
-alter table program_exercises enable row level security;
-alter table exercise_weeks    enable row level security;
-alter table workout_sessions  enable row level security;
-alter table set_logs          enable row level security;
+alter table programs         enable row level security;
+alter table client_programs  enable row level security;
+alter table program_days     enable row level security;
+alter table exercises        enable row level security;
+alter table exercise_weeks   enable row level security;
+alter table workout_sessions enable row level security;
+alter table set_logs         enable row level security;
 
 -- Trainers can manage their own programs
 create policy "trainers manage own programs"
@@ -140,26 +140,26 @@ create policy "trainers manage program_days"
     )
   );
 
--- Clients read program_exercises
-create policy "clients read program_exercises"
-  on program_exercises for select
+-- Clients read exercises
+create policy "clients read exercises"
+  on exercises for select
   using (
     exists (
       select 1 from program_days
       join client_programs on client_programs.program_id = program_days.program_id
-      where program_exercises.program_day_id = program_days.id
+      where exercises.program_day_id = program_days.id
         and client_programs.client_id = auth.uid()
     )
   );
 
--- Trainers manage program_exercises
-create policy "trainers manage program_exercises"
-  on program_exercises for all
+-- Trainers manage exercises
+create policy "trainers manage exercises"
+  on exercises for all
   using (
     exists (
       select 1 from program_days
       join programs on programs.id = program_days.program_id
-      where program_exercises.program_day_id = program_days.id
+      where exercises.program_day_id = program_days.id
         and programs.created_by = auth.uid()
     )
   );
@@ -169,10 +169,10 @@ create policy "clients read exercise_weeks"
   on exercise_weeks for select
   using (
     exists (
-      select 1 from program_exercises
-      join program_days on program_days.id = program_exercises.program_day_id
+      select 1 from exercises
+      join program_days on program_days.id = exercises.program_day_id
       join client_programs on client_programs.program_id = program_days.program_id
-      where exercise_weeks.program_exercise_id = program_exercises.id
+      where exercise_weeks.exercise_id = exercises.id
         and client_programs.client_id = auth.uid()
     )
   );
@@ -182,10 +182,10 @@ create policy "trainers manage exercise_weeks"
   on exercise_weeks for all
   using (
     exists (
-      select 1 from program_exercises
-      join program_days on program_days.id = program_exercises.program_day_id
+      select 1 from exercises
+      join program_days on program_days.id = exercises.program_day_id
       join programs on programs.id = program_days.program_id
-      where exercise_weeks.program_exercise_id = program_exercises.id
+      where exercise_weeks.exercise_id = exercises.id
         and programs.created_by = auth.uid()
     )
   );
