@@ -43,10 +43,12 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
 
   // Authenticated user visiting a public (auth) route → send to their dashboard
+  // Only redirect if they have a recognized role; otherwise let them stay (avoids loop)
   if (user && isPublicRoute) {
     const role = user.user_metadata?.role as string | undefined
-    const dashboard = getRoleDashboard(role)
-    return NextResponse.redirect(new URL(dashboard, request.url))
+    if (role === 'trainer' || role === 'client') {
+      return NextResponse.redirect(new URL(getRoleDashboard(role), request.url))
+    }
   }
 
   // Unauthenticated user visiting a protected route → send to login

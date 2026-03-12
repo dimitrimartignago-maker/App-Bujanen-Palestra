@@ -16,5 +16,5 @@ export default async function RootPage() {
   if (role === 'client') redirect('/client')
 
   // Fallback — authenticated but no recognized role
-  redirect('/login')
+  redirect('/login?error=no_role')
 }
