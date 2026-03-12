@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -31,13 +29,12 @@ export default function LoginPage() {
 
     const role = data.user?.user_metadata?.role as string | undefined
     if (role === 'trainer') {
-      router.push('/trainer')
+      window.location.href = '/trainer'
     } else if (role === 'client') {
-      router.push('/client')
+      window.location.href = '/client'
     } else {
-      router.push('/')
+      window.location.href = '/'
     }
-    router.refresh()
   }
 
   return (
