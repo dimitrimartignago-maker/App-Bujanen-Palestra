@@ -1,15 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { getMondayOfWeek } from '@/lib/workout'
 
 const DAY_MS = 86_400_000
-
-function getMondayOfWeek(weekOffset: number): Date {
-  const now = new Date()
-  const day = now.getDay() // 0 = Sun
-  const diffToMonday = day === 0 ? -6 : 1 - day
-  const monday = new Date(now.getTime() + diffToMonday * DAY_MS + weekOffset * 7 * DAY_MS)
-  monday.setHours(0, 0, 0, 0)
-  return monday
-}
 
 function formatRange(weekOffset: number): string {
   const monday = getMondayOfWeek(weekOffset)

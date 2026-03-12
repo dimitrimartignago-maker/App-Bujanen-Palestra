@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { fetchWeekData } from '@/lib/workout'
 import LogoutButton from '@/components/LogoutButton'
 import WorkoutSchedule from '@/components/workout/WorkoutSchedule'
 
@@ -16,6 +17,9 @@ export default async function ClientDashboard() {
 
   const name = user.user_metadata?.full_name || user.email
 
+  // Fetch current week's data server-side for instant first paint
+  const weekData = await fetchWeekData(supabase, user.id, 0)
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top nav */}
@@ -29,8 +33,22 @@ export default async function ClientDashboard() {
         </div>
       </header>
 
-      {/* Workout schedule */}
-      <WorkoutSchedule />
+      {weekData ? (
+        <WorkoutSchedule
+          userId={user.id}
+          startDate={weekData.startDate}
+          initialPlan={weekData.plan}
+          initialSetLog={weekData.setLog}
+        />
+      ) : (
+        <div className="flex flex-col items-center justify-center py-24 text-center px-4">
+          <span className="text-4xl">🏋️</span>
+          <p className="mt-4 text-lg font-semibold text-gray-800">No program assigned</p>
+          <p className="mt-1 text-sm text-gray-400">
+            Your trainer hasn&apos;t assigned a program yet. Check back soon.
+          </p>
+        </div>
+      )}
     </div>
   )
 }
