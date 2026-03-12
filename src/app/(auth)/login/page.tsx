@@ -27,7 +27,17 @@ export default function LoginPage() {
       return
     }
 
+    console.log('[login] signInWithPassword result:', {
+      userId: data.user?.id,
+      email: data.user?.email,
+      user_metadata: data.user?.user_metadata,
+      hasSession: !!data.session,
+      accessToken: data.session?.access_token?.slice(0, 20) + '…',
+    })
+
     const role = data.user?.user_metadata?.role as string | undefined
+    console.log('[login] role:', role, '→ navigating to:', role === 'trainer' ? '/trainer' : role === 'client' ? '/client' : '/')
+
     if (role === 'trainer') {
       window.location.href = '/trainer'
     } else if (role === 'client') {
