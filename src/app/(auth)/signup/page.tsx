@@ -1,14 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 type Role = 'trainer' | 'client'
 
 export default function SignupPage() {
-  const router = useRouter()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -41,12 +39,7 @@ export default function SignupPage() {
 
     // If email confirmation is disabled, user is immediately active
     const userRole = data.user?.user_metadata?.role as string | undefined
-    if (userRole === 'trainer') {
-      router.push('/trainer')
-    } else {
-      router.push('/client')
-    }
-    router.refresh()
+    window.location.href = userRole === 'trainer' ? '/trainer' : '/client'
   }
 
   return (
