@@ -170,12 +170,12 @@ export default function WorkoutSchedule({ userId, startDate, initialPlan, initia
   const dayWorkout = currentPlan?.days.find((d) => d.dayIndex === activeDayIndex) ?? null
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 px-4 py-6">
+    <div className="mx-auto max-w-client space-y-6 px-4 py-6">
       <div className="relative">
         <WeekSelector weekOffset={weekOffset} onChange={handleWeekChange} />
         {saving && (
-          <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-            Saving…
+          <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-muted">
+            Salvataggio…
           </span>
         )}
       </div>
@@ -189,16 +189,16 @@ export default function WorkoutSchedule({ userId, startDate, initialPlan, initia
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-xl bg-gray-100" />
+            <div key={i} className="h-40 animate-pulse rounded-xl bg-surface-2" />
           ))}
         </div>
       ) : currentPlan?.weekNumber === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-4xl">📅</span>
-          <p className="mt-3 font-medium text-gray-700">Program not started yet</p>
-          <p className="mt-1 text-sm text-gray-400">
-            Your program begins on{' '}
-            {new Date(startDate).toLocaleDateString('en-GB', {
+          <p className="mt-3 font-medium font-display text-white">Programma non ancora iniziato</p>
+          <p className="mt-1 text-sm text-muted">
+            Il tuo programma inizia il{' '}
+            {new Date(startDate).toLocaleDateString('it-IT', {
               day: 'numeric',
               month: 'long',
               year: 'numeric',
@@ -238,8 +238,8 @@ export default function WorkoutSchedule({ userId, startDate, initialPlan, initia
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-4xl">🛋️</span>
-          <p className="mt-3 font-medium text-gray-700">Rest day</p>
-          <p className="mt-1 text-sm text-gray-400">No workout scheduled for this day.</p>
+          <p className="mt-3 font-medium font-display text-white">Giorno di riposo</p>
+          <p className="mt-1 text-sm text-muted">Nessun allenamento previsto per oggi.</p>
         </div>
       )}
 

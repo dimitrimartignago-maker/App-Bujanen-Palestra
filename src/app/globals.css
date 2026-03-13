@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --font-oswald: 'Oswald', 'Impact', sans-serif;
+    --font-dm-sans: 'DM Sans', system-ui, sans-serif;
+  }
+  * { -webkit-tap-highlight-color: transparent; }
+  html { background-color: #0a0a0a; color: #ffffff; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #252525; border-radius: 9999px; }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type='number'] { -moz-appearance: textfield; }
+}
+
+@layer components {
+  .input {
+    @apply w-full bg-surface-2 border border-dim text-white text-sm rounded-lg px-3 py-2.5
+           placeholder:text-muted focus:border-accent focus:outline-none transition-colors;
+  }
+  .btn-primary {
+    @apply bg-accent text-bg font-semibold text-sm rounded-lg px-4 py-2.5
+           hover:opacity-90 disabled:opacity-40 transition-opacity;
+  }
+  .btn-ghost {
+    @apply border border-dim text-muted text-sm rounded-lg px-4 py-2.5
+           hover:text-white hover:border-white/20 transition-colors;
+  }
+  .btn-danger {
+    @apply border border-red-900/50 text-red-400 text-sm rounded-lg px-4 py-2.5
+           hover:bg-red-950/30 transition-colors;
+  }
+  .card {
+    @apply bg-surface border border-dim rounded-xl;
+  }
+}

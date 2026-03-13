@@ -67,7 +67,7 @@ export default function BulletinsPanel({ trainerId, gymId }: Props) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this bulletin?')) return
+    if (!confirm('Eliminare questo comunicato?')) return
     const supabase = createClient()
     await deleteBulletin(supabase, id)
     setBulletins((prev) => prev.filter((b) => b.id !== id))
@@ -85,7 +85,7 @@ export default function BulletinsPanel({ trainerId, gymId }: Props) {
     return (
       <div className="space-y-3 animate-pulse">
         {[1, 2].map((i) => (
-          <div key={i} className="h-20 rounded-lg bg-gray-100" />
+          <div key={i} className="h-20 rounded-lg bg-surface-2" />
         ))}
       </div>
     )
@@ -94,34 +94,28 @@ export default function BulletinsPanel({ trainerId, gymId }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          {bulletins.length} bulletin{bulletins.length !== 1 ? 's' : ''}
+        <p className="text-sm text-muted">
+          {bulletins.length} comunicat{bulletins.length !== 1 ? 'i' : 'o'}
         </p>
         {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="rounded-md bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
-          >
-            + New bulletin
+          <button onClick={() => setShowForm(true)} className="btn-primary text-xs px-3 py-1.5">
+            + Nuovo comunicato
           </button>
         )}
       </div>
 
       {showForm && (
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-lg border border-gray-200 p-4 space-y-3"
-        >
-          <p className="text-sm font-medium">New bulletin</p>
+        <form onSubmit={handleSubmit} className="card p-4 space-y-3">
+          <p className="text-sm font-medium text-white">Nuovo comunicato</p>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Recipient</label>
+            <label className="block text-xs text-muted mb-1">Destinatario</label>
             <select
               value={targetClientId}
               onChange={(e) => setTargetClientId(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+              className="input"
             >
-              <option value="">All clients (global)</option>
+              <option value="">Tutti i client (globale)</option>
               {members.map((m) => (
                 <option key={m.client.id} value={m.client.id}>
                   {m.client.full_name || m.client.email}
@@ -131,27 +125,27 @@ export default function BulletinsPanel({ trainerId, gymId }: Props) {
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Title</label>
+            <label className="block text-xs text-muted mb-1">Titolo</label>
             <input
               type="text"
               required
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Gym closed Monday"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+              placeholder="es. Palestra chiusa lunedì"
+              className="input"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Message</label>
+            <label className="block text-xs text-muted mb-1">Messaggio</label>
             <textarea
               required
               rows={4}
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Write your message here…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none resize-none"
+              placeholder="Scrivi il tuo messaggio…"
+              className="input resize-none"
             />
           </div>
 
@@ -159,9 +153,9 @@ export default function BulletinsPanel({ trainerId, gymId }: Props) {
             <button
               type="submit"
               disabled={!title.trim() || !body.trim() || submitting}
-              className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+              className="btn-primary text-sm px-4 py-2"
             >
-              {submitting ? 'Publishing…' : 'Publish'}
+              {submitting ? 'Pubblicazione…' : 'Pubblica'}
             </button>
             <button
               type="button"
@@ -171,47 +165,47 @@ export default function BulletinsPanel({ trainerId, gymId }: Props) {
                 setBody('')
                 setTargetClientId('')
               }}
-              className="rounded-md px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
+              className="btn-ghost text-sm px-4 py-2"
             >
-              Cancel
+              Annulla
             </button>
           </div>
         </form>
       )}
 
       {bulletins.length === 0 && !showForm && (
-        <div className="rounded-lg border border-dashed border-gray-300 py-12 text-center">
-          <p className="text-sm text-gray-500">No bulletins yet.</p>
-          <p className="text-xs text-gray-400 mt-1">
-            Publish a bulletin to notify your clients.
+        <div className="rounded-lg border border-dashed border-dim py-12 text-center">
+          <p className="text-sm text-muted">Nessun comunicato ancora.</p>
+          <p className="text-xs text-muted/60 mt-1">
+            Pubblica un comunicato per avvisare i tuoi client.
           </p>
         </div>
       )}
 
       {bulletins.map((b) => (
-        <div key={b.id} className="rounded-lg border border-gray-200 p-4">
+        <div key={b.id} className="card p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-medium text-sm">{b.title}</p>
+                <p className="font-medium text-sm text-white font-display">{b.title}</p>
                 {b.client_id ? (
-                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
+                  <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent">
                     → {b.clientEmail ?? 'Client'}
                   </span>
                 ) : (
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                    Global
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
+                    Globale
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{b.body}</p>
-              <p className="mt-2 text-xs text-gray-400">{formatDate(b.created_at)}</p>
+              <p className="mt-1 text-sm text-muted whitespace-pre-wrap">{b.body}</p>
+              <p className="mt-2 text-xs text-muted">{formatDate(b.created_at)}</p>
             </div>
             <button
               onClick={() => handleDelete(b.id)}
-              className="flex-shrink-0 text-xs text-red-400 hover:text-red-600"
+              className="flex-shrink-0 text-xs text-red-400 hover:text-red-300"
             >
-              Delete
+              Elimina
             </button>
           </div>
         </div>

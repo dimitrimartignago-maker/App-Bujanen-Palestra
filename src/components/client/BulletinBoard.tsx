@@ -46,7 +46,7 @@ export default function BulletinBoard({ clientId, onUnreadChange }: Props) {
     return (
       <div className="px-4 py-6 space-y-3 animate-pulse">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-24 rounded-xl bg-gray-100" />
+          <div key={i} className="h-24 rounded-xl bg-surface-2" />
         ))}
       </div>
     )
@@ -56,8 +56,8 @@ export default function BulletinBoard({ clientId, onUnreadChange }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
         <span className="text-4xl">📋</span>
-        <p className="mt-4 text-lg font-semibold text-gray-800">Nessun messaggio</p>
-        <p className="mt-1 text-sm text-gray-400">
+        <p className="mt-4 text-lg font-semibold font-display text-white">Nessun messaggio</p>
+        <p className="mt-1 text-sm text-muted">
           Il tuo trainer non ha ancora pubblicato comunicazioni.
         </p>
       </div>
@@ -65,14 +65,12 @@ export default function BulletinBoard({ clientId, onUnreadChange }: Props) {
   }
 
   return (
-    <div className="px-4 py-4 max-w-lg mx-auto space-y-3">
+    <div className="px-4 py-4 max-w-client mx-auto space-y-3">
       {bulletins.map((bulletin) => (
         <div
           key={bulletin.id}
-          className={`rounded-xl border p-4 transition-colors ${
-            bulletin.read
-              ? 'border-gray-200 bg-white'
-              : 'border-black bg-white ring-1 ring-black'
+          className={`card p-4 transition-colors ${
+            !bulletin.read ? 'border-accent/50 ring-1 ring-accent/20' : ''
           }`}
         >
           <div className="flex items-start justify-between gap-3">
@@ -81,14 +79,14 @@ export default function BulletinBoard({ clientId, onUnreadChange }: Props) {
                 {!bulletin.read && (
                   <span className="h-2 w-2 flex-shrink-0 rounded-full bg-red-500" />
                 )}
-                <p className="font-semibold text-sm leading-snug">{bulletin.title}</p>
+                <p className="font-semibold text-sm leading-snug text-white font-display">{bulletin.title}</p>
               </div>
-              <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+              <p className="mt-2 text-sm text-muted whitespace-pre-wrap leading-relaxed">
                 {bulletin.body}
               </p>
             </div>
           </div>
-          <p className="mt-3 text-xs text-gray-400">{formatDate(bulletin.created_at)}</p>
+          <p className="mt-3 text-xs text-muted">{formatDate(bulletin.created_at)}</p>
         </div>
       ))}
     </div>
