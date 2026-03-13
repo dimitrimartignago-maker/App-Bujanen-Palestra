@@ -79,13 +79,17 @@ export async function createGym(
   supabase: SupabaseClient,
   trainerId: string,
   name: string
-): Promise<Gym | null> {
-  const { data } = await supabase
+): Promise<{ gym: Gym | null; error: string | null }> {
+  const { data, error } = await supabase
     .from('gyms')
     .insert({ name: name.trim(), trainer_id: trainerId })
     .select('id, name, trainer_id')
     .single()
-  return data
+  if (error) {
+    console.error('[createGym]', error.code, error.message, error.details)
+    return { gym: null, error: `${error.message} (code: ${error.code})` }
+  }
+  return { gym: data, error: null }
 }
 
 // ============================================================
