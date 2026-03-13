@@ -4,8 +4,15 @@ import { useState } from 'react'
 import LogoutButton from '@/components/LogoutButton'
 import ClientsPanel from './ClientsPanel'
 import ProgramsPanel from './ProgramsPanel'
+import BulletinsPanel from './BulletinsPanel'
 
-type Tab = 'clients' | 'programs'
+type Tab = 'clients' | 'programs' | 'bulletins'
+
+const TAB_LABELS: Record<Tab, string> = {
+  clients: 'Clienti',
+  programs: 'Programmi',
+  bulletins: 'Bacheca',
+}
 
 interface Props {
   gymId: string
@@ -24,7 +31,7 @@ export default function TrainerDashboardClient({ gymId, gymName, trainerId, trai
         <div className="mx-auto max-w-3xl px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight">{gymName}</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Welcome, {trainerName}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Benvenuto, {trainerName}</p>
           </div>
           <LogoutButton />
         </div>
@@ -32,17 +39,17 @@ export default function TrainerDashboardClient({ gymId, gymName, trainerId, trai
         {/* Tabs */}
         <div className="mx-auto max-w-3xl px-4">
           <nav className="flex gap-6" aria-label="Tabs">
-            {(['clients', 'programs'] as Tab[]).map((tab) => (
+            {(Object.keys(TAB_LABELS) as Tab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`pb-3 text-sm font-medium border-b-2 transition-colors capitalize ${
+                className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
                     ? 'border-black text-black'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {tab}
+                {TAB_LABELS[tab]}
               </button>
             ))}
           </nav>
@@ -51,11 +58,9 @@ export default function TrainerDashboardClient({ gymId, gymName, trainerId, trai
 
       {/* Content */}
       <main className="mx-auto max-w-3xl px-4 py-6">
-        {activeTab === 'clients' ? (
-          <ClientsPanel gymId={gymId} trainerId={trainerId} />
-        ) : (
-          <ProgramsPanel trainerId={trainerId} />
-        )}
+        {activeTab === 'clients' && <ClientsPanel gymId={gymId} trainerId={trainerId} />}
+        {activeTab === 'programs' && <ProgramsPanel trainerId={trainerId} />}
+        {activeTab === 'bulletins' && <BulletinsPanel trainerId={trainerId} gymId={gymId} />}
       </main>
     </div>
   )
