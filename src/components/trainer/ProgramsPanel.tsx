@@ -20,6 +20,7 @@ export default function ProgramsPanel({ trainerId }: Props) {
   const [creatingName, setCreatingName] = useState('')
   const [creating, setCreating] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,17 +34,20 @@ export default function ProgramsPanel({ trainerId }: Props) {
   async function handleCreateProgram() {
     if (!creatingName.trim()) return
     setCreating(true)
+    setCreateError(null)
     const supabase = createClient()
-    const program = await createProgram(supabase, trainerId, creatingName)
+    const { program, error } = await createProgram(supabase, trainerId, creatingName)
     if (program) {
       setPrograms((prev) => [
         { id: program.id, name: program.name, created_at: new Date().toISOString(), dayCount: 0, assignmentCount: 0 },
         ...prev,
       ])
       setExpandedProgram(program.id)
+      setCreatingName('')
+      setShowCreate(false)
+    } else {
+      setCreateError(error ?? 'Impossibile creare il programma. Riprova.')
     }
-    setCreatingName('')
-    setShowCreate(false)
     setCreating(false)
   }
 
@@ -93,6 +97,11 @@ export default function ProgramsPanel({ trainerId }: Props) {
             }}
             className="input"
           />
+          {createError && (
+            <p className="rounded-lg bg-red-950/30 border border-red-900/50 px-3 py-2 text-sm text-red-400">
+              {createError}
+            </p>
+          )}
           <div className="flex gap-2">
             <button
               onClick={handleCreateProgram}
@@ -105,6 +114,7 @@ export default function ProgramsPanel({ trainerId }: Props) {
               onClick={() => {
                 setShowCreate(false)
                 setCreatingName('')
+                setCreateError(null)
               }}
               className="btn-ghost text-sm px-4 py-2"
             >

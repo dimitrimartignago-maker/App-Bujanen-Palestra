@@ -227,13 +227,17 @@ export async function createProgram(
   supabase: SupabaseClient,
   trainerId: string,
   name: string
-): Promise<{ id: string; name: string } | null> {
-  const { data } = await supabase
+): Promise<{ program: { id: string; name: string } | null; error: string | null }> {
+  const { data, error } = await supabase
     .from('programs')
     .insert({ name: name.trim(), created_by: trainerId })
     .select('id, name')
     .single()
-  return data
+  if (error) {
+    console.error('[createProgram]', error.code, error.message, error.details)
+    return { program: null, error: `${error.message} (code: ${error.code})` }
+  }
+  return { program: data, error: null }
 }
 
 export async function deleteProgram(
