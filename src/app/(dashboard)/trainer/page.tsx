@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import LogoutButton from '@/components/LogoutButton'
+import { getGym } from '@/lib/trainer'
+import GymSetup from '@/components/trainer/GymSetup'
+import TrainerDashboardClient from '@/components/trainer/TrainerDashboardClient'
 
 export default async function TrainerDashboard() {
   const supabase = await createClient()
@@ -13,14 +15,18 @@ export default async function TrainerDashboard() {
   const role = user.user_metadata?.role as string | undefined
   if (role !== 'trainer') redirect('/client')
 
+  const gym = await getGym(supabase, user.id)
+
+  if (!gym) {
+    return <GymSetup trainerId={user.id} />
+  }
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Trainer Dashboard</h1>
-        <p className="mt-2 text-gray-500">Welcome, {user.user_metadata?.full_name || user.email}</p>
-        <p className="mt-1 text-xs text-gray-400">Role: trainer</p>
-      </div>
-      <LogoutButton />
-    </div>
+    <TrainerDashboardClient
+      gymId={gym.id}
+      gymName={gym.name}
+      trainerId={user.id}
+      trainerName={user.user_metadata?.full_name || user.email || 'Trainer'}
+    />
   )
 }
