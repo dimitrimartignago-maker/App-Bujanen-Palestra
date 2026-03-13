@@ -34,6 +34,16 @@ export interface TrainerProgram {
   assignmentCount: number
 }
 
+/** A program that belongs to a specific client (client_id IS NOT NULL). */
+export interface ClientPersonalProgram {
+  id: string
+  name: string
+  created_at: string
+  dayCount: number
+  startDate: string | null // from the active client_programs row
+  isActive: boolean        // whether this program is currently active for the client
+}
+
 export interface ExerciseWeek {
   id: string
   week_number: number
@@ -210,6 +220,7 @@ export async function getTrainerPrograms(
     .from('programs')
     .select('id, name, created_at, program_days(id), client_programs(id)')
     .eq('created_by', trainerId)
+    .is('client_id', null)       // templates only — personal programs live in the client profile
     .order('created_at', { ascending: false })
 
   if (!data) return []
@@ -245,6 +256,92 @@ export async function deleteProgram(
   programId: string
 ): Promise<void> {
   await supabase.from('programs').delete().eq('id', programId)
+}
+
+/**
+ * Returns all personal programs (client_id = clientId) for a given client,
+ * along with the active start_date and whether the program is currently active.
+ */
+export async function getClientPersonalPrograms(
+  supabase: SupabaseClient,
+  clientId: string
+): Promise<ClientPersonalProgram[]> {
+  const { data } = await supabase
+    .from('programs')
+    .select('id, name, created_at, program_days(id), client_programs(is_active, start_date)')
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false })
+
+  if (!data) return []
+
+  return data.map((p: any) => {
+    const activeCp = (p.client_programs ?? []).find((cp: any) => cp.is_active)
+    return {
+      id: p.id,
+      name: p.name,
+      created_at: p.created_at,
+      dayCount: p.program_days?.length ?? 0,
+      startDate: activeCp?.start_date ?? null,
+      isActive: !!activeCp,
+    }
+  })
+}
+
+/**
+ * Creates a personal program (client_id set) and immediately assigns it to the
+ * client by creating a client_programs row. Deactivates any previously active program.
+ */
+export async function createPersonalProgram(
+  supabase: SupabaseClient,
+  trainerId: string,
+  clientId: string,
+  name: string,
+  startDate: string
+): Promise<{ program: { id: string; name: string } | null; clientProgramId: string | null; error: string | null }> {
+  const { data: prog, error: progErr } = await supabase
+    .from('programs')
+    .insert({ name: name.trim(), created_by: trainerId, client_id: clientId })
+    .select('id, name')
+    .single()
+
+  if (progErr || !prog) {
+    console.error('[createPersonalProgram]', progErr)
+    return { program: null, clientProgramId: null, error: progErr?.message ?? 'Errore nella creazione del programma.' }
+  }
+
+  // Deactivate any currently active program for this client
+  await supabase
+    .from('client_programs')
+    .update({ is_active: false })
+    .eq('client_id', clientId)
+    .eq('is_active', true)
+
+  // Auto-assign: create the client_programs row so the workout schedule works
+  const { data: cp } = await supabase
+    .from('client_programs')
+    .insert({ client_id: clientId, program_id: prog.id, start_date: startDate, is_active: true })
+    .select('id')
+    .single()
+
+  return { program: prog, clientProgramId: cp?.id ?? null, error: null }
+}
+
+/**
+ * Updates the start_date on the active client_programs row for a personal program.
+ * Does not change the is_active status.
+ */
+export async function updatePersonalProgramStart(
+  supabase: SupabaseClient,
+  clientId: string,
+  programId: string,
+  startDate: string
+): Promise<void> {
+  await supabase
+    .from('client_programs')
+    .update({ start_date: startDate })
+    .eq('client_id', clientId)
+    .eq('program_id', programId)
+    .eq('is_active', true)
 }
 
 // ============================================================
