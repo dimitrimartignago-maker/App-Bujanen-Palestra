@@ -8,6 +8,7 @@ import {
   removeProgramDay,
   addExercise,
   removeExercise,
+  updateExerciseRestSeconds,
   upsertExerciseWeek,
   removeExerciseWeek,
   type ProgramDay,
@@ -44,6 +45,7 @@ function weekRowFromDb(ew: ExerciseWeek): WeekRow {
 interface ExerciseFormState {
   name: string
   notes: string
+  restSeconds: number
 }
 
 export default function ProgramEditor({ programId, programName }: Props) {
@@ -52,7 +54,7 @@ export default function ProgramEditor({ programId, programName }: Props) {
   const [loaded, setLoaded] = useState(false)
   const [activeDay, setActiveDay] = useState<number>(0) // day_index 0-6
   const [addingExercise, setAddingExercise] = useState<string | null>(null) // dayId
-  const [exerciseForm, setExerciseForm] = useState<ExerciseFormState>({ name: '', notes: '' })
+  const [exerciseForm, setExerciseForm] = useState<ExerciseFormState>({ name: '', notes: '', restSeconds: 90 })
   const [weekRows, setWeekRows] = useState<Record<string, WeekRow[]>>({}) // exerciseId → rows
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -103,7 +105,7 @@ export default function ProgramEditor({ programId, programName }: Props) {
     if (!exerciseForm.name.trim()) return
     setSaving(true)
     const supabase = createClient()
-    const ex = await addExercise(supabase, dayId, exerciseForm.name, exerciseForm.notes)
+    const ex = await addExercise(supabase, dayId, exerciseForm.name, exerciseForm.notes, exerciseForm.restSeconds)
     if (ex) {
       setDays((prev) =>
         prev?.map((d) =>
@@ -112,9 +114,26 @@ export default function ProgramEditor({ programId, programName }: Props) {
       )
       setWeekRows((prev) => ({ ...prev, [ex.id]: [] }))
     }
-    setExerciseForm({ name: '', notes: '' })
+    setExerciseForm({ name: '', notes: '', restSeconds: 90 })
     setAddingExercise(null)
     setSaving(false)
+  }
+
+  async function handleSaveRestSeconds(dayId: string, exerciseId: string, seconds: number) {
+    const supabase = createClient()
+    await updateExerciseRestSeconds(supabase, exerciseId, seconds)
+    setDays((prev) =>
+      prev?.map((d) =>
+        d.id === dayId
+          ? {
+              ...d,
+              exercises: d.exercises.map((e) =>
+                e.id === exerciseId ? { ...e, rest_seconds: seconds } : e
+              ),
+            }
+          : d
+      ) ?? []
+    )
   }
 
   async function handleRemoveExercise(dayId: string, exerciseId: string) {
@@ -266,6 +285,7 @@ export default function ProgramEditor({ programId, programName }: Props) {
                 onUpdateWeekRow={(idx, field, value) => updateWeekRow(ex.id, idx, field, value)}
                 onSaveWeekRow={(idx) => saveWeekRow(ex.id, idx)}
                 onRemoveWeekRow={(idx) => removeWeekRow(ex.id, idx)}
+                onSaveRestSeconds={(s) => handleSaveRestSeconds(currentDay.id, ex.id, s)}
               />
             ))}
 
@@ -287,6 +307,17 @@ export default function ProgramEditor({ programId, programName }: Props) {
                   onChange={(e) => setExerciseForm((f) => ({ ...f, notes: e.target.value }))}
                   className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-black focus:outline-none"
                 />
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-500 whitespace-nowrap">Rest (sec)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={15}
+                    value={exerciseForm.restSeconds}
+                    onChange={(e) => setExerciseForm((f) => ({ ...f, restSeconds: parseInt(e.target.value) || 0 }))}
+                    className="w-20 rounded border border-gray-300 px-2 py-1.5 text-sm text-center focus:border-black focus:outline-none"
+                  />
+                </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleAddExercise(currentDay.id)}
@@ -298,7 +329,7 @@ export default function ProgramEditor({ programId, programName }: Props) {
                   <button
                     onClick={() => {
                       setAddingExercise(null)
-                      setExerciseForm({ name: '', notes: '' })
+                      setExerciseForm({ name: '', notes: '', restSeconds: 90 })
                     }}
                     className="rounded px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700"
                   >
@@ -336,6 +367,7 @@ interface ExerciseCardProps {
   onUpdateWeekRow: (idx: number, field: keyof WeekRow, value: string | number) => void
   onSaveWeekRow: (idx: number) => void
   onRemoveWeekRow: (idx: number) => void
+  onSaveRestSeconds: (seconds: number) => void
 }
 
 function ExerciseCard({
@@ -348,7 +380,9 @@ function ExerciseCard({
   onUpdateWeekRow,
   onSaveWeekRow,
   onRemoveWeekRow,
+  onSaveRestSeconds,
 }: ExerciseCardProps) {
+  const [restInput, setRestInput] = useState(String(exercise.rest_seconds))
   return (
     <div className="rounded-md border border-gray-200">
       <div
@@ -361,7 +395,7 @@ function ExerciseCard({
             <span className="ml-2 text-xs text-gray-400">{exercise.notes}</span>
           )}
           <span className="ml-2 text-xs text-gray-400">
-            ({weekRows.length} week{weekRows.length !== 1 ? 's' : ''})
+            ({weekRows.length} wk · {exercise.rest_seconds}s rest)
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -379,8 +413,20 @@ function ExerciseCard({
       </div>
 
       {expanded && (
-        <div className="border-t px-3 py-3">
-          <p className="text-xs font-medium text-gray-500 mb-2">Weekly progression</p>
+        <div className="border-t px-3 py-3 space-y-3">
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-500 whitespace-nowrap">Rest (sec)</label>
+            <input
+              type="number"
+              min={0}
+              step={15}
+              value={restInput}
+              onChange={(e) => setRestInput(e.target.value)}
+              onBlur={() => onSaveRestSeconds(parseInt(restInput) || 0)}
+              className="w-20 rounded border border-gray-200 px-1 py-0.5 text-center text-xs focus:border-black focus:outline-none"
+            />
+          </div>
+          <p className="text-xs font-medium text-gray-500">Weekly progression</p>
 
           {weekRows.length > 0 && (
             <table className="w-full text-xs mb-2">

@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/client'
 import WeekSelector from './WeekSelector'
 import DayTabs from './DayTabs'
 import ExerciseCard from './ExerciseCard'
+import RestTimer from './RestTimer'
 
 function todayDayIndex(): number {
   const d = new Date().getDay() // 0=Sun
@@ -38,6 +39,7 @@ export default function WorkoutSchedule({ userId, startDate, initialPlan, initia
 
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [restTimer, setRestTimer] = useState<{ seconds: number } | null>(null)
 
   const debounceRefs = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
@@ -216,7 +218,7 @@ export default function WorkoutSchedule({ userId, startDate, initialPlan, initia
                 key={exercise.id}
                 exercise={exercise}
                 setEntries={entries}
-                onSetChange={(setIndex, field, value) =>
+                onSetChange={(setIndex, field, value) => {
                   handleSetChange(
                     dayWorkout.programDayId,
                     activeDayIndex,
@@ -225,7 +227,10 @@ export default function WorkoutSchedule({ userId, startDate, initialPlan, initia
                     field,
                     value
                   )
-                }
+                  if (field === 'done' && value === true) {
+                    setRestTimer({ seconds: exercise.restSeconds })
+                  }
+                }}
               />
             )
           })}
@@ -236,6 +241,15 @@ export default function WorkoutSchedule({ userId, startDate, initialPlan, initia
           <p className="mt-3 font-medium text-gray-700">Rest day</p>
           <p className="mt-1 text-sm text-gray-400">No workout scheduled for this day.</p>
         </div>
+      )}
+
+      {restTimer && (
+        <RestTimer
+          key={Date.now()} // remount on each new timer
+          durationSeconds={restTimer.seconds}
+          onDone={() => setRestTimer(null)}
+          onSkip={() => setRestTimer(null)}
+        />
       )}
     </div>
   )
