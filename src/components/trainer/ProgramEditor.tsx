@@ -147,14 +147,16 @@ export default function ProgramEditor({ programId, programName }: Props) {
     )
   }
 
-  function addWeekRow(exerciseId: string) {
+  async function addWeekRow(exerciseId: string) {
     const existing = weekRows[exerciseId] ?? []
     const nextWeek = existing.length > 0 ? existing[existing.length - 1].weekNumber + 1 : 1
+    const supabase = createClient()
+    const saved = await upsertExerciseWeek(supabase, exerciseId, nextWeek, 3, 10, null)
     setWeekRows((prev) => ({
       ...prev,
       [exerciseId]: [
-        ...existing,
-        { weekNumber: nextWeek, setCount: 3, targetReps: 10, targetWeight: '' },
+        ...(prev[exerciseId] ?? []),
+        saved ? weekRowFromDb(saved) : { weekNumber: nextWeek, setCount: 3, targetReps: 10, targetWeight: '' },
       ],
     }))
   }
