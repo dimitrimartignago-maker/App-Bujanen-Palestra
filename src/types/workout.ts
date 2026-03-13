@@ -9,6 +9,7 @@ export interface Exercise {
   id: string           // program_exercises.id (UUID)
   name: string
   notes?: string
+  restSeconds: number  // rest timer duration after each set
   sets: WorkoutSet[]
 }
 

@@ -47,6 +47,7 @@ export interface ProgramExercise {
   name: string
   notes: string | null
   order_index: number
+  rest_seconds: number
   exercise_weeks: ExerciseWeek[]
 }
 
@@ -251,7 +252,7 @@ export async function getProgramDays(
     .select(`
       id, day_index, label, order_index,
       exercises (
-        id, name, notes, order_index,
+        id, name, notes, order_index, rest_seconds,
         exercise_weeks (id, week_number, set_count, target_weight, target_reps)
       )
     `)
@@ -272,6 +273,7 @@ export async function getProgramDays(
         name: e.name,
         notes: e.notes,
         order_index: e.order_index,
+        rest_seconds: e.rest_seconds ?? 90,
         exercise_weeks: (e.exercise_weeks ?? []).sort(
           (a: any, b: any) => a.week_number - b.week_number
         ),
@@ -313,7 +315,8 @@ export async function addExercise(
   supabase: SupabaseClient,
   dayId: string,
   name: string,
-  notes: string
+  notes: string,
+  restSeconds: number = 90
 ): Promise<ProgramExercise | null> {
   const { data: existing } = await supabase
     .from('exercises')
@@ -331,12 +334,24 @@ export async function addExercise(
       name: name.trim(),
       notes: notes.trim() || null,
       order_index: nextIndex,
+      rest_seconds: restSeconds,
     })
-    .select('id, name, notes, order_index')
+    .select('id, name, notes, order_index, rest_seconds')
     .single()
 
   if (!data) return null
   return { ...data, exercise_weeks: [] }
+}
+
+export async function updateExerciseRestSeconds(
+  supabase: SupabaseClient,
+  exerciseId: string,
+  restSeconds: number
+): Promise<void> {
+  await supabase
+    .from('exercises')
+    .update({ rest_seconds: restSeconds })
+    .eq('id', exerciseId)
 }
 
 export async function removeExercise(

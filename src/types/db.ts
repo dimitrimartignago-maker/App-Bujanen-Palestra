@@ -13,6 +13,7 @@ export interface DbExercise {
   name: string
   notes: string | null
   order_index: number
+  rest_seconds: number
   exercise_weeks: DbExerciseWeek[]
 }
 

@@ -96,6 +96,7 @@ export function buildWeekData(
           const exercise: Exercise = {
             id: ex.id,
             name: ex.name,
+            restSeconds: ex.rest_seconds,
             sets,
             ...(ex.notes ? { notes: ex.notes } : {}),
           }
@@ -151,7 +152,7 @@ async function fetchClientProgram(
          program_days (
            id, day_index, label, order_index,
            exercises (
-             id, name, notes, order_index,
+             id, name, notes, order_index, rest_seconds,
              exercise_weeks ( id, week_number, set_count, target_weight, target_reps )
            )
          )
