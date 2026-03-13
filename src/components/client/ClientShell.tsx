@@ -5,8 +5,9 @@ import type { WeekPlan, SetLog } from '@/types/workout'
 import LogoutButton from '@/components/LogoutButton'
 import WorkoutSchedule from '@/components/workout/WorkoutSchedule'
 import BulletinBoard from './BulletinBoard'
+import ProgressView from './ProgressView'
 
-type Tab = 'schedule' | 'bacheca'
+type Tab = 'schedule' | 'progressi' | 'bacheca'
 
 interface Props {
   userId: string
@@ -55,6 +56,17 @@ export default function ClientShell({
             </button>
 
             <button
+              onClick={() => setActiveTab('progressi')}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'progressi'
+                  ? 'border-black text-black'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Progressi
+            </button>
+
+            <button
               onClick={() => setActiveTab('bacheca')}
               className={`relative pb-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'bacheca'
@@ -74,7 +86,7 @@ export default function ClientShell({
       </header>
 
       {/* Content */}
-      {activeTab === 'schedule' ? (
+      {activeTab === 'schedule' && (
         startDate && initialPlan ? (
           <WorkoutSchedule
             userId={userId}
@@ -91,11 +103,10 @@ export default function ClientShell({
             </p>
           </div>
         )
-      ) : (
-        <BulletinBoard
-          clientId={userId}
-          onUnreadChange={setUnread}
-        />
+      )}
+      {activeTab === 'progressi' && <ProgressView clientId={userId} />}
+      {activeTab === 'bacheca' && (
+        <BulletinBoard clientId={userId} onUnreadChange={setUnread} />
       )}
     </div>
   )
