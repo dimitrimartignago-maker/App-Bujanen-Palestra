@@ -26,8 +26,9 @@ export function getMondayISO(weekOffset: number): string {
  * Returns null if the selected week is before the program started.
  */
 export function getWeekNumber(startDate: string, weekOffset: number): number | null {
-  const start = new Date(startDate)
-  start.setHours(0, 0, 0, 0)
+  // Parse as local date to avoid UTC-midnight shift in timezones east of UTC.
+  const [y, m, d] = startDate.split('-').map(Number)
+  const start = new Date(y, m - 1, d) // local midnight, no timezone offset
   const monday = getMondayOfWeek(weekOffset)
   const diffDays = Math.round((monday.getTime() - start.getTime()) / DAY_MS)
   const weekNumber = Math.floor(diffDays / 7) + 1
