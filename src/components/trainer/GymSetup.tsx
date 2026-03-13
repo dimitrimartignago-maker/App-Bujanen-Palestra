@@ -20,10 +20,10 @@ export default function GymSetup({ trainerId }: Props) {
     setLoading(true)
 
     const supabase = createClient()
-    const gym = await createGym(supabase, trainerId, name)
+    const { gym, error: gymError } = await createGym(supabase, trainerId, name)
 
     if (!gym) {
-      setError('Impossibile creare la palestra. Riprova.')
+      setError(gymError ?? 'Impossibile creare la palestra. Riprova.')
       setLoading(false)
       return
     }
