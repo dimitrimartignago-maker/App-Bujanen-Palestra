@@ -9,6 +9,7 @@ import {
   type TrainerProgram,
 } from '@/lib/trainer'
 import ProgramEditor from './ProgramEditor'
+import PdfImportModal from './PdfImportModal'
 
 interface Props {
   trainerId: string
@@ -22,6 +23,7 @@ export default function ProgramsPanel({ trainerId }: Props) {
   const [showCreate, setShowCreate] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null)
+  const [showImport, setShowImport] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -69,16 +71,40 @@ export default function ProgramsPanel({ trainerId }: Props) {
     )
   }
 
+  function handleImportSaved(programId: string, programName: string) {
+    setPrograms((prev) => [
+      { id: programId, name: programName, created_at: new Date().toISOString(), dayCount: 0, assignmentCount: 0 },
+      ...prev,
+    ])
+    setExpandedProgram(programId)
+    setShowImport(false)
+  }
+
   return (
     <div className="space-y-4">
+      {showImport && (
+        <PdfImportModal
+          trainerId={trainerId}
+          onClose={() => setShowImport(false)}
+          onSaved={handleImportSaved}
+        />
+      )}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted">
           {programs.length} programm{programs.length !== 1 ? 'i' : 'a'}
         </p>
         {!showCreate && (
-          <button onClick={() => setShowCreate(true)} className="btn-primary text-xs px-3 py-1.5">
-            + Nuovo programma
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="btn-ghost text-xs px-3 py-1.5"
+            >
+              Importa da PDF
+            </button>
+            <button onClick={() => setShowCreate(true)} className="btn-primary text-xs px-3 py-1.5">
+              + Nuovo programma
+            </button>
+          </div>
         )}
       </div>
 
