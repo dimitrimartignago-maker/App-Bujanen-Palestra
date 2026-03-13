@@ -16,8 +16,8 @@ import {
   type ExerciseWeek,
 } from '@/lib/trainer'
 
-const DAY_LABELS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAY_LABELS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
+const DAY_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
 
 interface Props {
   programId: string
@@ -28,7 +28,7 @@ interface WeekRow {
   weekNumber: number
   setCount: number
   targetReps: number
-  targetWeight: string // string for input
+  targetWeight: string
   id?: string
 }
 
@@ -52,10 +52,10 @@ export default function ProgramEditor({ programId, programName }: Props) {
   const [days, setDays] = useState<ProgramDay[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
-  const [activeDay, setActiveDay] = useState<number>(0) // day_index 0-6
-  const [addingExercise, setAddingExercise] = useState<string | null>(null) // dayId
+  const [activeDay, setActiveDay] = useState<number>(0)
+  const [addingExercise, setAddingExercise] = useState<string | null>(null)
   const [exerciseForm, setExerciseForm] = useState<ExerciseFormState>({ name: '', notes: '', restSeconds: 90 })
-  const [weekRows, setWeekRows] = useState<Record<string, WeekRow[]>>({}) // exerciseId → rows
+  const [weekRows, setWeekRows] = useState<Record<string, WeekRow[]>>({})
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -65,7 +65,6 @@ export default function ProgramEditor({ programId, programName }: Props) {
     const data = await getProgramDays(supabase, programId)
     setDays(data)
 
-    // Pre-populate weekRows from loaded data
     const rows: Record<string, WeekRow[]> = {}
     for (const day of data) {
       for (const ex of day.exercises) {
@@ -77,7 +76,6 @@ export default function ProgramEditor({ programId, programName }: Props) {
     setLoading(false)
   }, [programId])
 
-  // Load on first render of the expanded editor
   if (!loaded && !loading) {
     load()
   }
@@ -95,7 +93,7 @@ export default function ProgramEditor({ programId, programName }: Props) {
   }
 
   async function handleRemoveDay(dayId: string) {
-    if (!confirm('Remove this training day and all its exercises?')) return
+    if (!confirm('Rimuovere questo giorno e tutti i suoi esercizi?')) return
     const supabase = createClient()
     await removeProgramDay(supabase, dayId)
     setDays((prev) => prev?.filter((d) => d.id !== dayId) ?? [])
@@ -137,7 +135,7 @@ export default function ProgramEditor({ programId, programName }: Props) {
   }
 
   async function handleRemoveExercise(dayId: string, exerciseId: string) {
-    if (!confirm('Remove this exercise?')) return
+    if (!confirm('Rimuovere questo esercizio?')) return
     const supabase = createClient()
     await removeExercise(supabase, exerciseId)
     setDays((prev) =>
@@ -210,14 +208,14 @@ export default function ProgramEditor({ programId, programName }: Props) {
   if (loading) {
     return (
       <div className="mt-4 space-y-2 animate-pulse">
-        <div className="h-8 bg-gray-100 rounded w-full" />
-        <div className="h-32 bg-gray-100 rounded w-full" />
+        <div className="h-8 bg-surface-2 rounded w-full" />
+        <div className="h-32 bg-surface-2 rounded w-full" />
       </div>
     )
   }
 
   return (
-    <div className="mt-4 border-t pt-4">
+    <div className="mt-4">
       {/* Day tabs */}
       <div className="flex gap-1 overflow-x-auto pb-2">
         {DAY_SHORT.map((label, i) => {
@@ -228,10 +226,10 @@ export default function ProgramEditor({ programId, programName }: Props) {
               onClick={() => setActiveDay(i)}
               className={`flex-shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                 activeDay === i
-                  ? 'bg-black text-white'
+                  ? 'bg-accent text-bg'
                   : hasDay
-                  ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  : 'text-gray-400 hover:text-gray-600'
+                  ? 'bg-surface-2 text-white hover:bg-dim'
+                  : 'text-muted hover:text-white'
               }`}
             >
               {label}
@@ -245,29 +243,29 @@ export default function ProgramEditor({ programId, programName }: Props) {
       <div className="mt-3">
         {!currentDay ? (
           <div className="text-center py-6">
-            <p className="text-sm text-gray-500 mb-3">{DAY_LABELS[activeDay]} — no training</p>
+            <p className="text-sm text-muted mb-3">{DAY_LABELS[activeDay]} — nessun allenamento</p>
             <button
               onClick={handleAddDay}
-              className="rounded-md border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-600 hover:border-gray-400 hover:text-gray-900"
+              className="rounded-md border border-dashed border-dim px-4 py-2 text-sm text-muted hover:border-accent hover:text-accent"
             >
-              + Add {DAY_LABELS[activeDay]} training
+              + Aggiungi {DAY_LABELS[activeDay]}
             </button>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-gray-700">{DAY_LABELS[activeDay]}</h4>
+              <h4 className="text-sm font-semibold text-white font-display">{DAY_LABELS[activeDay]}</h4>
               <button
                 onClick={() => handleRemoveDay(currentDay.id)}
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-red-400 hover:text-red-300"
               >
-                Remove day
+                Rimuovi giorno
               </button>
             </div>
 
             {/* Exercises */}
             {currentDay.exercises.length === 0 && (
-              <p className="text-xs text-gray-400 italic">No exercises yet.</p>
+              <p className="text-xs text-muted italic">Nessun esercizio ancora.</p>
             )}
 
             {currentDay.exercises.map((ex) => (
@@ -291,58 +289,58 @@ export default function ProgramEditor({ programId, programName }: Props) {
 
             {/* Add exercise */}
             {addingExercise === currentDay.id ? (
-              <div className="rounded-md border border-gray-200 p-3 space-y-2">
+              <div className="card p-3 space-y-2">
                 <input
                   type="text"
-                  placeholder="Exercise name"
+                  placeholder="Nome esercizio"
                   autoFocus
                   value={exerciseForm.name}
                   onChange={(e) => setExerciseForm((f) => ({ ...f, name: e.target.value }))}
-                  className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-black focus:outline-none"
+                  className="input text-sm py-1.5"
                 />
                 <input
                   type="text"
-                  placeholder="Notes (optional)"
+                  placeholder="Note (opzionale)"
                   value={exerciseForm.notes}
                   onChange={(e) => setExerciseForm((f) => ({ ...f, notes: e.target.value }))}
-                  className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-black focus:outline-none"
+                  className="input text-sm py-1.5"
                 />
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-gray-500 whitespace-nowrap">Rest (sec)</label>
+                  <label className="text-xs text-muted whitespace-nowrap">Riposo (sec)</label>
                   <input
                     type="number"
                     min={0}
                     step={15}
                     value={exerciseForm.restSeconds}
                     onChange={(e) => setExerciseForm((f) => ({ ...f, restSeconds: parseInt(e.target.value) || 0 }))}
-                    className="w-20 rounded border border-gray-300 px-2 py-1.5 text-sm text-center focus:border-black focus:outline-none"
+                    className="w-20 rounded border border-dim bg-surface-2 px-2 py-1.5 text-sm text-center text-white focus:border-accent focus:outline-none"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleAddExercise(currentDay.id)}
                     disabled={!exerciseForm.name.trim() || saving}
-                    className="rounded bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                    className="btn-primary text-xs px-3 py-1.5"
                   >
-                    {saving ? 'Saving…' : 'Add'}
+                    {saving ? 'Salvataggio…' : 'Aggiungi'}
                   </button>
                   <button
                     onClick={() => {
                       setAddingExercise(null)
                       setExerciseForm({ name: '', notes: '', restSeconds: 90 })
                     }}
-                    className="rounded px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700"
+                    className="btn-ghost text-xs px-3 py-1.5"
                   >
-                    Cancel
+                    Annulla
                   </button>
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setAddingExercise(currentDay.id)}
-                className="w-full rounded-md border border-dashed border-gray-300 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700"
+                className="w-full rounded-md border border-dashed border-dim py-2 text-sm text-muted hover:border-accent hover:text-accent transition-colors"
               >
-                + Add exercise
+                + Aggiungi esercizio
               </button>
             )}
           </div>
@@ -384,18 +382,18 @@ function ExerciseCard({
 }: ExerciseCardProps) {
   const [restInput, setRestInput] = useState(String(exercise.rest_seconds))
   return (
-    <div className="rounded-md border border-gray-200">
+    <div className="card overflow-hidden">
       <div
-        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-50"
+        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-surface-2 transition-colors"
         onClick={onToggle}
       >
         <div>
-          <span className="text-sm font-medium">{exercise.name}</span>
+          <span className="text-sm font-medium text-white">{exercise.name}</span>
           {exercise.notes && (
-            <span className="ml-2 text-xs text-gray-400">{exercise.notes}</span>
+            <span className="ml-2 text-xs text-muted">{exercise.notes}</span>
           )}
-          <span className="ml-2 text-xs text-gray-400">
-            ({weekRows.length} wk · {exercise.rest_seconds}s rest)
+          <span className="ml-2 text-xs text-muted">
+            ({weekRows.length} sett · {exercise.rest_seconds}s riposo)
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -404,18 +402,18 @@ function ExerciseCard({
               e.stopPropagation()
               onRemoveExercise()
             }}
-            className="text-xs text-red-400 hover:text-red-600"
+            className="text-xs text-red-400 hover:text-red-300"
           >
-            Remove
+            Rimuovi
           </button>
-          <span className="text-gray-400 text-xs">{expanded ? '▲' : '▼'}</span>
+          <span className="text-muted text-xs">{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
 
       {expanded && (
-        <div className="border-t px-3 py-3 space-y-3">
+        <div className="border-t border-dim px-3 py-3 space-y-3">
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500 whitespace-nowrap">Rest (sec)</label>
+            <label className="text-xs text-muted whitespace-nowrap">Riposo (sec)</label>
             <input
               type="number"
               min={0}
@@ -423,25 +421,25 @@ function ExerciseCard({
               value={restInput}
               onChange={(e) => setRestInput(e.target.value)}
               onBlur={() => onSaveRestSeconds(parseInt(restInput) || 0)}
-              className="w-20 rounded border border-gray-200 px-1 py-0.5 text-center text-xs focus:border-black focus:outline-none"
+              className="w-20 rounded border border-dim bg-surface-2 px-1 py-0.5 text-center text-xs text-white focus:border-accent focus:outline-none"
             />
           </div>
-          <p className="text-xs font-medium text-gray-500">Weekly progression</p>
+          <p className="text-xs font-medium text-muted">Progressione settimanale</p>
 
           {weekRows.length > 0 && (
             <table className="w-full text-xs mb-2">
               <thead>
-                <tr className="text-gray-400">
-                  <th className="text-left py-1 pr-2 font-medium">Wk</th>
-                  <th className="text-left py-1 pr-2 font-medium">Sets</th>
+                <tr className="text-muted">
+                  <th className="text-left py-1 pr-2 font-medium">Sett</th>
+                  <th className="text-left py-1 pr-2 font-medium">Serie</th>
                   <th className="text-left py-1 pr-2 font-medium">Reps</th>
-                  <th className="text-left py-1 pr-2 font-medium">Weight (kg)</th>
+                  <th className="text-left py-1 pr-2 font-medium">Peso (kg)</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
                 {weekRows.map((row, idx) => (
-                  <tr key={idx} className="border-t border-gray-100">
+                  <tr key={idx} className="border-t border-dim">
                     <td className="py-1 pr-2">
                       <input
                         type="number"
@@ -451,7 +449,7 @@ function ExerciseCard({
                           onUpdateWeekRow(idx, 'weekNumber', parseInt(e.target.value) || 1)
                         }
                         onBlur={() => onSaveWeekRow(idx)}
-                        className="w-10 rounded border border-gray-200 px-1 py-0.5 text-center focus:border-black focus:outline-none"
+                        className="w-10 rounded border border-dim bg-surface-2 px-1 py-0.5 text-center text-white focus:border-accent focus:outline-none"
                       />
                     </td>
                     <td className="py-1 pr-2">
@@ -463,7 +461,7 @@ function ExerciseCard({
                           onUpdateWeekRow(idx, 'setCount', parseInt(e.target.value) || 1)
                         }
                         onBlur={() => onSaveWeekRow(idx)}
-                        className="w-12 rounded border border-gray-200 px-1 py-0.5 text-center focus:border-black focus:outline-none"
+                        className="w-12 rounded border border-dim bg-surface-2 px-1 py-0.5 text-center text-white focus:border-accent focus:outline-none"
                       />
                     </td>
                     <td className="py-1 pr-2">
@@ -475,25 +473,25 @@ function ExerciseCard({
                           onUpdateWeekRow(idx, 'targetReps', parseInt(e.target.value) || 1)
                         }
                         onBlur={() => onSaveWeekRow(idx)}
-                        className="w-12 rounded border border-gray-200 px-1 py-0.5 text-center focus:border-black focus:outline-none"
+                        className="w-12 rounded border border-dim bg-surface-2 px-1 py-0.5 text-center text-white focus:border-accent focus:outline-none"
                       />
                     </td>
                     <td className="py-1 pr-2">
                       <input
                         type="text"
-                        placeholder="BW"
+                        placeholder="PC"
                         value={row.targetWeight}
                         onChange={(e) =>
                           onUpdateWeekRow(idx, 'targetWeight', e.target.value)
                         }
                         onBlur={() => onSaveWeekRow(idx)}
-                        className="w-16 rounded border border-gray-200 px-1 py-0.5 text-center focus:border-black focus:outline-none"
+                        className="w-16 rounded border border-dim bg-surface-2 px-1 py-0.5 text-center text-white focus:border-accent focus:outline-none"
                       />
                     </td>
                     <td className="py-1">
                       <button
                         onClick={() => onRemoveWeekRow(idx)}
-                        className="text-red-400 hover:text-red-600 px-1"
+                        className="text-red-400 hover:text-red-300 px-1"
                       >
                         ✕
                       </button>
@@ -506,9 +504,9 @@ function ExerciseCard({
 
           <button
             onClick={onAddWeekRow}
-            className="text-xs text-gray-500 hover:text-gray-800"
+            className="text-xs text-muted hover:text-accent transition-colors"
           >
-            + Add week
+            + Aggiungi settimana
           </button>
         </div>
       )}

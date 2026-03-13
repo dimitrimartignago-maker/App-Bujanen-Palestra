@@ -48,7 +48,7 @@ export default function ProgramsPanel({ trainerId }: Props) {
   }
 
   async function handleDeleteProgram(id: string, name: string) {
-    if (!confirm(`Delete program "${name}"? This cannot be undone.`)) return
+    if (!confirm(`Eliminare il programma "${name}"? Questa azione è irreversibile.`)) return
     const supabase = createClient()
     await deleteProgram(supabase, id)
     setPrograms((prev) => prev.filter((p) => p.id !== id))
@@ -59,7 +59,7 @@ export default function ProgramsPanel({ trainerId }: Props) {
     return (
       <div className="space-y-3 animate-pulse">
         {[1, 2].map((i) => (
-          <div key={i} className="h-16 rounded-lg bg-gray-100" />
+          <div key={i} className="h-16 rounded-lg bg-surface-2" />
         ))}
       </div>
     )
@@ -68,25 +68,22 @@ export default function ProgramsPanel({ trainerId }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          {programs.length} program{programs.length !== 1 ? 's' : ''}
+        <p className="text-sm text-muted">
+          {programs.length} programm{programs.length !== 1 ? 'i' : 'a'}
         </p>
         {!showCreate && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="rounded-md bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
-          >
-            + New program
+          <button onClick={() => setShowCreate(true)} className="btn-primary text-xs px-3 py-1.5">
+            + Nuovo programma
           </button>
         )}
       </div>
 
       {showCreate && (
-        <div className="rounded-lg border border-gray-200 p-4 space-y-3">
-          <p className="text-sm font-medium">New program</p>
+        <div className="card p-4 space-y-3">
+          <p className="text-sm font-medium text-white">Nuovo programma</p>
           <input
             type="text"
-            placeholder="Program name"
+            placeholder="Nome programma"
             autoFocus
             value={creatingName}
             onChange={(e) => setCreatingName(e.target.value)}
@@ -94,49 +91,49 @@ export default function ProgramsPanel({ trainerId }: Props) {
               if (e.key === 'Enter') handleCreateProgram()
               if (e.key === 'Escape') setShowCreate(false)
             }}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+            className="input"
           />
           <div className="flex gap-2">
             <button
               onClick={handleCreateProgram}
               disabled={!creatingName.trim() || creating}
-              className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+              className="btn-primary text-sm px-4 py-2"
             >
-              {creating ? 'Creating…' : 'Create'}
+              {creating ? 'Creazione…' : 'Crea'}
             </button>
             <button
               onClick={() => {
                 setShowCreate(false)
                 setCreatingName('')
               }}
-              className="rounded-md px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
+              className="btn-ghost text-sm px-4 py-2"
             >
-              Cancel
+              Annulla
             </button>
           </div>
         </div>
       )}
 
       {programs.length === 0 && !showCreate && (
-        <div className="rounded-lg border border-dashed border-gray-300 py-12 text-center">
-          <p className="text-sm text-gray-500">No programs yet.</p>
-          <p className="text-xs text-gray-400 mt-1">Create your first program to get started.</p>
+        <div className="rounded-lg border border-dashed border-dim py-12 text-center">
+          <p className="text-sm text-muted">Nessun programma ancora.</p>
+          <p className="text-xs text-muted/60 mt-1">Crea il tuo primo programma per iniziare.</p>
         </div>
       )}
 
       {programs.map((program) => (
-        <div key={program.id} className="rounded-lg border border-gray-200">
+        <div key={program.id} className="card overflow-hidden">
           <div
-            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-surface-2 transition-colors"
             onClick={() =>
               setExpandedProgram((prev) => (prev === program.id ? null : program.id))
             }
           >
             <div>
-              <p className="font-medium text-sm">{program.name}</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {program.dayCount} day{program.dayCount !== 1 ? 's' : ''} ·{' '}
-                {program.assignmentCount} client{program.assignmentCount !== 1 ? 's' : ''} assigned
+              <p className="font-medium text-sm text-white">{program.name}</p>
+              <p className="text-xs text-muted mt-0.5">
+                {program.dayCount} giorn{program.dayCount !== 1 ? 'i' : 'o'} ·{' '}
+                {program.assignmentCount} client{program.assignmentCount !== 1 ? 'i' : 'e'} assegnat{program.assignmentCount !== 1 ? 'i' : 'o'}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -145,18 +142,18 @@ export default function ProgramsPanel({ trainerId }: Props) {
                   e.stopPropagation()
                   handleDeleteProgram(program.id, program.name)
                 }}
-                className="text-xs text-red-400 hover:text-red-600"
+                className="text-xs text-red-400 hover:text-red-300"
               >
-                Delete
+                Elimina
               </button>
-              <span className="text-gray-400 text-xs">
+              <span className="text-muted text-xs">
                 {expandedProgram === program.id ? '▲' : '▼'}
               </span>
             </div>
           </div>
 
           {expandedProgram === program.id && (
-            <div className="px-4 pb-4">
+            <div className="px-4 pb-4 border-t border-dim">
               <ProgramEditor programId={program.id} programName={program.name} />
             </div>
           )}

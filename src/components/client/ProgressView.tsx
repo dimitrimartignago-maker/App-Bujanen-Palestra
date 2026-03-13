@@ -20,9 +20,9 @@ interface Props {
 
 function StatusBadge({ status }: { status: ExerciseStatus }) {
   const cfg = {
-    fatto: 'bg-green-100 text-green-700',
-    parziale: 'bg-yellow-100 text-yellow-700',
-    non_fatto: 'bg-gray-100 text-gray-500',
+    fatto: 'bg-accent/20 text-accent',
+    parziale: 'bg-yellow-900/30 text-yellow-400',
+    non_fatto: 'bg-surface-2 text-muted',
   }[status]
 
   const label = {
@@ -40,9 +40,9 @@ function StatusBadge({ status }: { status: ExerciseStatus }) {
 
 function ProgressBar({ pct }: { pct: number }) {
   const color =
-    pct === 100 ? 'bg-green-500' : pct > 0 ? 'bg-yellow-400' : 'bg-gray-200'
+    pct === 100 ? 'bg-accent' : pct > 0 ? 'bg-yellow-400' : 'bg-dim'
   return (
-    <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+    <div className="h-1.5 w-full rounded-full bg-surface-2 overflow-hidden">
       <div
         className={`h-full rounded-full transition-all ${color}`}
         style={{ width: `${pct}%` }}
@@ -65,21 +65,21 @@ function WeekCard({ week }: { week: WeekProgress }) {
 
   const pctColor =
     week.completionPct === 100
-      ? 'text-green-600'
+      ? 'text-accent'
       : week.completionPct > 0
-      ? 'text-yellow-600'
-      : 'text-gray-400'
+      ? 'text-yellow-400'
+      : 'text-muted'
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="card overflow-hidden">
       <button
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-surface-2 transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="text-left">
-            <p className="text-sm font-semibold">Settimana {week.weekNumber}</p>
-            <p className="text-xs text-gray-400">{formatMonday(week.mondayISO)}</p>
+            <p className="text-sm font-semibold text-white">Settimana {week.weekNumber}</p>
+            <p className="text-xs text-muted">{formatMonday(week.mondayISO)}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
@@ -89,23 +89,23 @@ function WeekCard({ week }: { week: WeekProgress }) {
           <span className={`text-sm font-semibold tabular-nums w-9 text-right ${pctColor}`}>
             {week.completionPct}%
           </span>
-          <span className="text-gray-400 text-xs">{expanded ? '▲' : '▼'}</span>
+          <span className="text-muted text-xs">{expanded ? '▲' : '▼'}</span>
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t divide-y divide-gray-100">
+        <div className="border-t border-dim divide-y divide-dim">
           {week.days.map((day) => (
             <div key={day.dayId} className="px-4 py-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                <p className="text-xs font-semibold text-muted uppercase tracking-wide">
                   {day.label ?? DAY_NAMES[day.dayIndex]}
                 </p>
                 <div className="flex items-center gap-2">
                   <div className="w-16">
                     <ProgressBar pct={day.completionPct} />
                   </div>
-                  <span className="text-xs text-gray-500 w-8 text-right">
+                  <span className="text-xs text-muted w-8 text-right">
                     {day.completionPct}%
                   </span>
                 </div>
@@ -117,9 +117,9 @@ function WeekCard({ week }: { week: WeekProgress }) {
                     key={ex.exerciseId}
                     className="flex items-center justify-between gap-2"
                   >
-                    <p className="text-sm text-gray-800 truncate">{ex.name}</p>
+                    <p className="text-sm text-white truncate">{ex.name}</p>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs text-gray-400 tabular-nums">
+                      <span className="text-xs text-muted tabular-nums">
                         {ex.doneSets}/{ex.totalSets} serie
                       </span>
                       <StatusBadge status={ex.status} />
@@ -165,17 +165,16 @@ export default function ProgressView({ clientId }: Props) {
     setResetting(true)
     const supabase = createClient()
     await resetProgramData(supabase, progress.clientProgramId)
-    // Reload progress (will show all zeros)
     await load()
     setResetting(false)
   }
 
   if (loading) {
     return (
-      <div className="px-4 py-6 max-w-lg mx-auto space-y-3 animate-pulse">
-        <div className="h-20 rounded-xl bg-gray-100" />
+      <div className="px-4 py-6 max-w-client mx-auto space-y-3 animate-pulse">
+        <div className="h-20 rounded-xl bg-surface-2" />
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 rounded-xl bg-gray-100" />
+          <div key={i} className="h-16 rounded-xl bg-surface-2" />
         ))}
       </div>
     )
@@ -185,8 +184,8 @@ export default function ProgressView({ clientId }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
         <span className="text-4xl">📊</span>
-        <p className="mt-4 text-lg font-semibold text-gray-800">Nessun programma attivo</p>
-        <p className="mt-1 text-sm text-gray-400">
+        <p className="mt-4 text-lg font-semibold font-display text-white">Nessun programma attivo</p>
+        <p className="mt-1 text-sm text-muted">
           Il tuo trainer non ha ancora assegnato un programma.
         </p>
       </div>
@@ -194,10 +193,10 @@ export default function ProgressView({ clientId }: Props) {
   }
 
   return (
-    <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
+    <div className="px-4 py-4 max-w-client mx-auto space-y-4">
       {/* Summary card */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
-        <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">
+      <div className="card p-4">
+        <p className="text-xs text-muted uppercase tracking-wide font-medium mb-1">
           {progress.programName}
         </p>
         <div className="flex items-end justify-between gap-4">
@@ -205,18 +204,18 @@ export default function ProgressView({ clientId }: Props) {
             <ProgressBar pct={progress.overallPct} />
           </div>
           <p
-            className={`text-2xl font-bold tabular-nums leading-none ${
+            className={`text-2xl font-bold tabular-nums leading-none font-display ${
               progress.overallPct === 100
-                ? 'text-green-600'
+                ? 'text-accent'
                 : progress.overallPct > 0
-                ? 'text-yellow-600'
-                : 'text-gray-400'
+                ? 'text-yellow-400'
+                : 'text-muted'
             }`}
           >
             {progress.overallPct}%
           </p>
         </div>
-        <p className="mt-1 text-xs text-gray-400">
+        <p className="mt-1 text-xs text-muted">
           Completamento totale · {progress.weeks.length} settiman
           {progress.weeks.length === 1 ? 'a' : 'e'}
         </p>
@@ -228,15 +227,15 @@ export default function ProgressView({ clientId }: Props) {
       ))}
 
       {/* Reset button */}
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-t border-dim">
         <button
           onClick={handleReset}
           disabled={resetting}
-          className="w-full rounded-xl border border-red-200 py-3 text-sm font-medium text-red-500 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors"
+          className="btn-danger w-full py-3"
         >
           {resetting ? 'Azzeramento in corso…' : 'Azzera tutti i dati di allenamento'}
         </button>
-        <p className="mt-1.5 text-center text-xs text-gray-400">
+        <p className="mt-1.5 text-center text-xs text-muted">
           Elimina tutte le sessioni e i log di serie. Irreversibile.
         </p>
       </div>

@@ -30,26 +30,26 @@ export default function ClientShell({
   const [unread, setUnread] = useState(initialUnread)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg">
       {/* Top nav */}
-      <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-lg px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-10 border-b border-dim bg-surface">
+        <div className="mx-auto max-w-client px-4 py-3 flex items-center justify-between">
           <div>
-            <p className="text-xs text-gray-400">Bentornato</p>
-            <p className="truncate max-w-[180px] text-sm font-semibold text-gray-900">{name}</p>
+            <p className="text-xs text-muted">Bentornato</p>
+            <p className="truncate max-w-[180px] text-sm font-semibold text-white font-display">{name}</p>
           </div>
           <LogoutButton />
         </div>
 
         {/* Tabs */}
-        <div className="mx-auto max-w-lg px-4">
+        <div className="mx-auto max-w-client px-4">
           <nav className="flex gap-6">
             <button
               onClick={() => setActiveTab('schedule')}
               className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'schedule'
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-muted hover:text-white'
               }`}
             >
               Scheda
@@ -59,8 +59,8 @@ export default function ClientShell({
               onClick={() => setActiveTab('progressi')}
               className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'progressi'
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-muted hover:text-white'
               }`}
             >
               Progressi
@@ -70,8 +70,8 @@ export default function ClientShell({
               onClick={() => setActiveTab('bacheca')}
               className={`relative pb-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'bacheca'
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-muted hover:text-white'
               }`}
             >
               Bacheca
@@ -97,8 +97,8 @@ export default function ClientShell({
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-center px-4">
             <span className="text-4xl">🏋️</span>
-            <p className="mt-4 text-lg font-semibold text-gray-800">Nessun programma assegnato</p>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-4 text-lg font-semibold font-display text-white">Nessun programma assegnato</p>
+            <p className="mt-1 text-sm text-muted">
               Il tuo trainer non ha ancora assegnato un programma.
             </p>
           </div>

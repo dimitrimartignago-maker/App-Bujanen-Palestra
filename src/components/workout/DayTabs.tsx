@@ -1,4 +1,4 @@
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
 
 interface Props {
   activeDayIndex: number
@@ -16,19 +16,19 @@ export default function DayTabs({ activeDayIndex, daysWithWorkout, onChange }: P
           <button
             key={i}
             onClick={() => onChange(i)}
-            className={`relative flex min-w-[52px] flex-col items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`relative flex min-w-[48px] flex-col items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
               isActive
-                ? 'bg-black text-white'
+                ? 'bg-accent text-bg'
                 : hasWorkout
-                ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                : 'text-gray-400 hover:bg-gray-50'
+                ? 'bg-surface-2 text-white hover:bg-dim'
+                : 'text-muted hover:text-white'
             }`}
           >
             {label}
             {hasWorkout && (
               <span
                 className={`mt-1 h-1.5 w-1.5 rounded-full ${
-                  isActive ? 'bg-white' : 'bg-black'
+                  isActive ? 'bg-bg' : 'bg-accent'
                 }`}
               />
             )}

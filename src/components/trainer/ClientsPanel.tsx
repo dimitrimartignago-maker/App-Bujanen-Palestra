@@ -71,7 +71,6 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
       setAddError(error)
       return
     }
-    // Refresh members
     const updated = await getGymMembers(supabase, gymId)
     setMembers(updated)
     setSearchQuery('')
@@ -80,7 +79,7 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
   }
 
   async function handleRemoveMember(membershipId: string, name: string) {
-    if (!confirm(`Remove ${name} from your gym?`)) return
+    if (!confirm(`Rimuovere ${name} dalla palestra?`)) return
     const supabase = createClient()
     await removeGymMember(supabase, membershipId)
     setMembers((prev) => prev.filter((m) => m.membershipId !== membershipId))
@@ -89,7 +88,6 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
   function openAssignModal(member: GymMember) {
     setAssignModal(member)
     setAssignProgramId(member.activeProgram?.program?.id ?? '')
-    // Default start date: next Monday
     const today = new Date()
     const daysUntilMonday = (8 - today.getDay()) % 7 || 7
     const nextMonday = new Date(today)
@@ -119,7 +117,7 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
     return (
       <div className="space-y-3 animate-pulse">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 rounded-lg bg-gray-100" />
+          <div key={i} className="h-16 rounded-lg bg-surface-2" />
         ))}
       </div>
     )
@@ -128,59 +126,56 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          {members.length} client{members.length !== 1 ? 's' : ''}
+        <p className="text-sm text-muted">
+          {members.length} client{members.length !== 1 ? 'i' : 'e'}
         </p>
         {!addingMember && (
-          <button
-            onClick={() => setAddingMember(true)}
-            className="rounded-md bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
-          >
-            + Add client
+          <button onClick={() => setAddingMember(true)} className="btn-primary text-xs px-3 py-1.5">
+            + Aggiungi client
           </button>
         )}
       </div>
 
       {/* Add client search */}
       {addingMember && (
-        <div className="rounded-lg border border-gray-200 p-4 space-y-3">
-          <p className="text-sm font-medium">Find client by name or email</p>
+        <div className="card p-4 space-y-3">
+          <p className="text-sm font-medium text-white">Cerca per nome o email</p>
           <div className="relative">
             <input
               type="text"
-              placeholder="Search clients…"
+              placeholder="Cerca client…"
               autoFocus
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+              className="input"
             />
             {searching && (
-              <span className="absolute right-3 top-2.5 text-xs text-gray-400">Searching…</span>
+              <span className="absolute right-3 top-2.5 text-xs text-muted">Ricerca…</span>
             )}
           </div>
 
           {addError && (
-            <p className="text-xs text-red-600">{addError}</p>
+            <p className="text-xs text-red-400">{addError}</p>
           )}
 
           {searchResults.length > 0 && (
-            <ul className="divide-y divide-gray-100 rounded-md border border-gray-200 overflow-hidden">
+            <ul className="divide-y divide-dim rounded-lg border border-dim overflow-hidden">
               {searchResults.map((client) => {
                 const alreadyMember = members.some((m) => m.client.id === client.id)
                 return (
-                  <li key={client.id} className="flex items-center justify-between px-3 py-2">
+                  <li key={client.id} className="flex items-center justify-between px-3 py-2 bg-surface-2">
                     <div>
-                      <p className="text-sm font-medium">{client.full_name || client.email}</p>
+                      <p className="text-sm font-medium text-white">{client.full_name || client.email}</p>
                       {client.full_name && (
-                        <p className="text-xs text-gray-400">{client.email}</p>
+                        <p className="text-xs text-muted">{client.email}</p>
                       )}
                     </div>
                     <button
                       onClick={() => handleAddMember(client)}
                       disabled={alreadyMember}
-                      className="text-xs rounded-md border border-black px-2 py-1 hover:bg-black hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                      className={alreadyMember ? 'btn-ghost text-xs px-2 py-1 opacity-40' : 'btn-primary text-xs px-2 py-1'}
                     >
-                      {alreadyMember ? 'Already added' : 'Add'}
+                      {alreadyMember ? 'Già aggiunto' : 'Aggiungi'}
                     </button>
                   </li>
                 )
@@ -189,7 +184,7 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
           )}
 
           {searchQuery.trim() && !searching && searchResults.length === 0 && (
-            <p className="text-xs text-gray-400">No clients found. They must sign up first.</p>
+            <p className="text-xs text-muted">Nessun client trovato. Deve prima registrarsi.</p>
           )}
 
           <button
@@ -199,19 +194,19 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
               setSearchResults([])
               setAddError(null)
             }}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-muted hover:text-white"
           >
-            Cancel
+            Annulla
           </button>
         </div>
       )}
 
       {/* Members list */}
       {members.length === 0 && !addingMember && (
-        <div className="rounded-lg border border-dashed border-gray-300 py-12 text-center">
-          <p className="text-sm text-gray-500">No clients yet.</p>
-          <p className="text-xs text-gray-400 mt-1">
-            Add clients by searching for their email or name above.
+        <div className="rounded-lg border border-dashed border-dim py-12 text-center">
+          <p className="text-sm text-muted">Nessun client ancora.</p>
+          <p className="text-xs text-muted/60 mt-1">
+            Aggiungi client cercando per email o nome.
           </p>
         </div>
       )}
@@ -219,39 +214,36 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
       {members.map((member) => {
         const displayName = member.client.full_name || member.client.email
         return (
-          <div key={member.membershipId} className="rounded-lg border border-gray-200 p-4">
+          <div key={member.membershipId} className="card p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="font-medium text-sm truncate">{displayName}</p>
+                <p className="font-medium text-sm text-white truncate">{displayName}</p>
                 {member.client.full_name && (
-                  <p className="text-xs text-gray-400 truncate">{member.client.email}</p>
+                  <p className="text-xs text-muted truncate">{member.client.email}</p>
                 )}
                 <div className="mt-1.5">
                   {member.activeProgram ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                      {member.activeProgram.program.name} · from{' '}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+                      <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                      {member.activeProgram.program.name} · dal{' '}
                       {member.activeProgram.start_date}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                      No program assigned
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
+                      Nessun programma
                     </span>
                   )}
                 </div>
               </div>
               <div className="flex gap-2 flex-shrink-0">
-                <button
-                  onClick={() => openAssignModal(member)}
-                  className="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium hover:border-gray-500"
-                >
-                  {member.activeProgram ? 'Change program' : 'Assign program'}
+                <button onClick={() => openAssignModal(member)} className="btn-ghost text-xs px-2.5 py-1">
+                  {member.activeProgram ? 'Cambia' : 'Assegna'}
                 </button>
                 <button
                   onClick={() => handleRemoveMember(member.membershipId, displayName)}
-                  className="rounded-md border border-red-200 px-2.5 py-1 text-xs font-medium text-red-500 hover:border-red-400"
+                  className="btn-danger text-xs px-2.5 py-1"
                 >
-                  Remove
+                  Rimuovi
                 </button>
               </div>
             </div>
@@ -261,21 +253,21 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
 
       {/* Assign program modal */}
       {assignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl space-y-4">
-            <h3 className="font-semibold text-base">
-              Assign program to {assignModal.client.full_name || assignModal.client.email}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-sm card p-6 space-y-4">
+            <h3 className="font-semibold text-base font-display text-white">
+              Assegna programma a {assignModal.client.full_name || assignModal.client.email}
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Program</label>
+                <label className="block text-sm font-medium text-white mb-1.5">Programma</label>
                 <select
                   value={assignProgramId}
                   onChange={(e) => setAssignProgramId(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+                  className="input"
                 >
-                  <option value="">Select a program…</option>
+                  <option value="">Seleziona un programma…</option>
                   {programs.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
@@ -285,12 +277,12 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Start date (week 1 Monday)</label>
+                <label className="block text-sm font-medium text-white mb-1.5">Data inizio (lunedì settimana 1)</label>
                 <input
                   type="date"
                   value={assignStartDate}
                   onChange={(e) => setAssignStartDate(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+                  className="input"
                 />
               </div>
             </div>
@@ -299,15 +291,12 @@ export default function ClientsPanel({ gymId, trainerId }: Props) {
               <button
                 onClick={handleAssignProgram}
                 disabled={!assignProgramId || !assignStartDate || assigning}
-                className="flex-1 rounded-md bg-black py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="btn-primary flex-1 py-2"
               >
-                {assigning ? 'Assigning…' : 'Assign'}
+                {assigning ? 'Assegnazione…' : 'Assegna'}
               </button>
-              <button
-                onClick={() => setAssignModal(null)}
-                className="flex-1 rounded-md border border-gray-300 py-2 text-sm hover:border-gray-500"
-              >
-                Cancel
+              <button onClick={() => setAssignModal(null)} className="btn-ghost flex-1 py-2">
+                Annulla
               </button>
             </div>
           </div>

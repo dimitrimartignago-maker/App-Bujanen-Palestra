@@ -47,17 +47,15 @@ export default function RestTimer({ durationSeconds, onDone, onSkip }: Props) {
   }, [durationSeconds, finish])
 
   const progress = durationSeconds > 0 ? remaining / durationSeconds : 0
-  // dashOffset 0 = full ring, CIRCUMFERENCE = empty ring
   const dashOffset = CIRCUMFERENCE * (1 - progress)
 
   const displaySecs = Math.ceil(remaining)
 
-  // Color: green when plenty of time, yellow when < 30%, red when < 10%
   const ringColor =
-    progress > 0.3 ? '#16a34a' : progress > 0.1 ? '#ca8a04' : '#dc2626'
+    progress > 0.3 ? '#c8f520' : progress > 0.1 ? '#ca8a04' : '#dc2626'
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 px-6">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-bg/95 px-6">
       {/* Ring */}
       <div className="relative flex items-center justify-center">
         <svg
@@ -73,7 +71,7 @@ export default function RestTimer({ durationSeconds, onDone, onSkip }: Props) {
             cy="60"
             r={RADIUS}
             fill="none"
-            stroke="#374151"
+            stroke="#252525"
             strokeWidth="8"
           />
           {/* Countdown arc */}
@@ -93,23 +91,23 @@ export default function RestTimer({ durationSeconds, onDone, onSkip }: Props) {
 
         {/* Centre time display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-bold tabular-nums text-white leading-none">
+          <span className="text-5xl font-bold tabular-nums text-white leading-none font-display">
             {displaySecs}
           </span>
-          <span className="mt-1 text-xs font-medium uppercase tracking-widest text-gray-400">
+          <span className="mt-1 text-xs font-medium uppercase tracking-widest text-muted">
             riposo
           </span>
         </div>
       </div>
 
       {/* Label */}
-      <p className="mt-8 text-base font-semibold text-white">Riposa…</p>
-      <p className="mt-1 text-sm text-gray-400">Il timer ti avviserà alla fine.</p>
+      <p className="mt-8 text-base font-semibold text-white font-display">Riposa…</p>
+      <p className="mt-1 text-sm text-muted">Il timer ti avviserà alla fine.</p>
 
       {/* Skip */}
       <button
         onClick={onSkip}
-        className="mt-10 rounded-full border border-white/20 px-8 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors"
+        className="mt-10 btn-ghost px-8 py-3"
       >
         Salta il riposo
       </button>
