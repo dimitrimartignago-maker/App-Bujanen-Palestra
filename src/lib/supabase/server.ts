@@ -1,9 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
-import { type ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
 import { cookies } from 'next/headers'
 
 export async function createClient() {
-  const cookieStore = await cookies()
+  const cookieStore = await cookies() // Fondamentale: deve esserci 'await'
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,13 +12,13 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: Partial<ResponseCookie> }[]) {
+        setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Called from a Server Component — middleware handles persistence
+            // Questo può essere ignorato se chiamato da un Server Component
           }
         },
       },
