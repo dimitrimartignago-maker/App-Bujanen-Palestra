@@ -32,7 +32,18 @@ export default function SignupPage() {
       return
     }
 
+    console.log('[signup] signUp result:', {
+      userId: data.user?.id,
+      email: data.user?.email,
+      user_metadata: data.user?.user_metadata,
+      hasSession: !!data.session,
+      // null session means email confirmation is required
+      accessToken: data.session?.access_token?.slice(0, 20) + '…',
+    })
+
+    // If email confirmation is disabled, user is immediately active
     const userRole = data.user?.user_metadata?.role as string | undefined
+    console.log('[signup] userRole:', userRole, '→ navigating to:', userRole === 'trainer' ? '/trainer' : '/client')
     window.location.href = userRole === 'trainer' ? '/trainer' : '/client'
   }
 
